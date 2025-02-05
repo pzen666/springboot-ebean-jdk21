@@ -9,10 +9,36 @@
     </parent>
     <artifactId>server</artifactId>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- 使用 Spring Boot BOM 来管理依赖版本 -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>3.4.0</version> <!-- 确保使用与项目匹配的 Spring Boot 版本 -->
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <properties>
         <java.version>21</java.version>
         <ebean.version>15.8.1</ebean.version>
+        <postgresql.version>42.7.5</postgresql.version>
         <log4j.version>2.24.3</log4j.version>
+        <fastjson2.version>2.0.44</fastjson2.version>
+        <commonsIo.version>2.16.1</commonsIo.version>
+        <commons.version>3.14.0</commons.version>
+        <commons.pool2.version>2.12.0</commons.pool2.version>
+        <jakarta.validation.version>3.0.2</jakarta.validation.version>
+        <bcprov.jdk18on.version>1.80</bcprov.jdk18on.version>
+        <hutool.version>5.8.35</hutool.version>
+        <kafka.version>3.6.0</kafka.version>
+        <jakarta.servlet.version>6.1.0</jakarta.servlet.version>
+        <jjwt.version>0.12.5</jjwt.version>
+        <spring.data.commons.version>4.0.0-M1</spring.data.commons.version>
+        <spring.data.ebean.version>2.0.0.RELEASE</spring.data.ebean.version>
     </properties>
 
     <dependencies>
@@ -26,10 +52,16 @@
             <artifactId>entity</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
             <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging</artifactId>
@@ -40,6 +72,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <!-- Quartz Scheduler -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
@@ -55,82 +88,101 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <!-- 添加 Undertow 依赖 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-undertow</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <!-- 引入 Log4j2 日志 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.7.5</version>
+            <version>${postgresql.version}</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>io.ebean</groupId>
             <artifactId>ebean</artifactId>
             <version>${ebean.version}</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.ebean/ebean-platform-postgres -->
         <dependency>
             <groupId>io.ebean</groupId>
-            <artifactId>ebean-platform-postgres</artifactId>
+            <artifactId>ebean-agent</artifactId>
             <version>${ebean.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.ebean/ebean-ddl-generator -->
-        <dependency>
-            <groupId>io.ebean</groupId>
-            <artifactId>ebean-ddl-generator</artifactId>
-            <version>${ebean.version}</version>
-            <scope>compile</scope>
-        </dependency>
-
-
         <dependency>
             <groupId>io.ebean</groupId>
             <artifactId>querybean-generator</artifactId>
             <version>${ebean.version}</version>
             <scope>provided</scope>
         </dependency>
+        <!-- Ebean对Spring事务支持 -->
+        <dependency>
+            <groupId>io.ebean</groupId>
+            <artifactId>ebean-spring-txn</artifactId>
+            <version>${ebean.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.ebean</groupId>
+            <artifactId>ebean-externalmapping-api</artifactId>
+            <version>14.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.ebean</groupId>
+            <artifactId>ebean-jackson-mapper</artifactId>
+            <version>${ebean.version}</version>
+        </dependency>
+        <!-- 数据源全平台支持 -->
+        <!--        <dependency>-->
+        <!--            <groupId>io.ebean</groupId>-->
+        <!--            <artifactId>ebean-platform-all</artifactId>-->
+        <!--            <version>${ebean.version}</version>-->
+        <!--        </dependency>-->
+        <!-- 数据源Postgres平台支持 -->
+        <dependency>
+            <groupId>io.ebean</groupId>
+            <artifactId>ebean-platform-postgres</artifactId>
+            <version>${ebean.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.ebean</groupId>
+            <artifactId>ebean-ddl-generator</artifactId>
+            <version>${ebean.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.hexagonframework.data</groupId>
+            <artifactId>spring-data-ebean</artifactId>
+            <version>${spring.data.ebean.version}</version>
+        </dependency>
+
+
+
         <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-commons -->
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
-            <version>4.0.0-M1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-jpa -->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.data</groupId>-->
-<!--            <artifactId>spring-data-jpa</artifactId>-->
-<!--            <version>4.0.0-M1</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.data</groupId>-->
-<!--            <artifactId>spring-data-jdbc</artifactId>-->
-<!--            <version>4.0.0-M1</version>-->
-<!--        </dependency>-->
-
-
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-devtools</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>junit</groupId>-->
-<!--            <artifactId>junit</artifactId>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>io.github.hexagonframework.data</groupId>
-            <artifactId>spring-data-ebean</artifactId>
-            <version>2.0.0.RELEASE</version>
+            <version>${spring.data.commons.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
         <dependency>
@@ -148,10 +200,90 @@
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>${log4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-config</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta.servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>${commons.pool2.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-all -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>${hutool.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>${bcprov.jdk18on.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${jakarta.validation.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commonsIo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${fastjson2.version}</version>
+        </dependency>
+
+
+
 
 
 
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
