@@ -1,4 +1,4 @@
-package com.pzen.server.utils.modbus.poll;
+package com.pzen.server.utils.modbus.rtu.poll;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;

@@ -1,4 +1,4 @@
-package com.pzen.server.utils.modbus.slave;
+package com.pzen.server.utils.modbus.rtu.slave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
