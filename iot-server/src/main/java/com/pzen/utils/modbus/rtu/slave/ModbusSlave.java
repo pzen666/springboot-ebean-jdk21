@@ -1,4 +1,4 @@
-package com.pzen.server.utils.modbus.rtu.slave;
+package com.pzen.utils.modbus.rtu.slave;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
@@ -16,20 +16,12 @@ import java.util.List;
  */
 public class ModbusSlave {
 
-    private static final String PORT_NAME = "COM11";// COM端口名
-    private static final int BAUD_RATE = 9600;// 波特率
-    private static final int DATA_BITS = 8;// 数据位
-    private static final int STOP_BITS = 1;// 停止位
-    private static final int PARITY = SerialPort.NO_PARITY;// 校验
+    private static final int DATA_BITS = 8; // 数据位
+    private static final int STOP_BITS = 1; // 停止位
+    private static final int PARITY = SerialPort.NO_PARITY; // 校验
 
-    public static void main(String[] args) {
-        SerialPort serialPort = SerialPort.getCommPort(PORT_NAME);
-
-        serialPort.setBaudRate(BAUD_RATE);
-        serialPort.setNumDataBits(DATA_BITS);
-        serialPort.setNumStopBits(STOP_BITS);
-        serialPort.setParity(PARITY);
-
+    // 启动Modbus从站
+    public static void startModbusSlave(SerialPort serialPort) {
         if (serialPort.openPort()) {
             serialPort.addDataListener(new SerialPortMessageListener() {
                 @Override
@@ -146,5 +138,17 @@ public class ModbusSlave {
         }
 
         return doubleValues;
+    }
+
+    public static void main(String[] args) {
+        // 打开串口连接
+        SerialPort serialPort = SerialPort.getCommPort("COM11");
+        serialPort.setBaudRate(9600);
+        serialPort.setNumDataBits(DATA_BITS);
+        serialPort.setNumStopBits(STOP_BITS);
+        serialPort.setParity(PARITY);
+
+        // 启动Modbus从站
+        startModbusSlave(serialPort);
     }
 }

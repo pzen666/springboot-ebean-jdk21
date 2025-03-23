@@ -1,4 +1,4 @@
-package com.pzen.server.utils.modbus.rtu.poll;
+package com.pzen.utils.modbus.rtu.poll;
 
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
@@ -10,57 +10,16 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ModbusMaster {
-    private static final String PORT_NAME = "COM10";  // COM端口号
-    private static final int BAUD_RATE = 9600;  // 波特率
+
     private static final int DATA_BITS = 8;  // 数据位
     private static final int STOP_BITS = 1;  // 停止位
     private static final int PARITY = SerialPort.NO_PARITY;  // 校验位
 
     private static final int slaveId = 1; // 从站ID
     private static final int functionCode = 16; // 功能码 (Write Multiple Registers)
-    private static final int startAddress = 0; // 起始地址
-    private static final int quantity = 10; // 寄存器数量 (即要写入的浮动数个数)
-
-    public static void main(String[] args) {
-        // 创建一个浮动数列表，准备发送
-        List<Float> floatList = Arrays.asList(0.1f, 0.2f, 0.3f, 0.4f, 0.5f);
-        // 打开串口连接
-        SerialPort serialPort = SerialPort.getCommPort(PORT_NAME);
-        serialPort.setBaudRate(BAUD_RATE);
-        serialPort.setNumDataBits(DATA_BITS);
-        serialPort.setNumStopBits(STOP_BITS);
-        serialPort.setParity(PARITY);
-
-        if (!serialPort.openPort()) {
-            System.out.println("Failed to open serial port.");
-            return;
-        }
-
-        try {
-            while (true){
-                // 生成Modbus报文并发送
-                byte[] modbusRequest = createModbusRequest(floatList);
-                serialPort.writeBytes(modbusRequest, modbusRequest.length);
-                // 等待并读取响应
-                byte[] response = new byte[256];
-                int bytesRead = serialPort.readBytes(response, response.length);
-                if (bytesRead > 0) {
-                    System.out.println("Response: " + Arrays.toString(Arrays.copyOf(response, bytesRead)));
-                } else {
-                    System.out.println("No response from slave.");
-                }
-                Thread.sleep(1000);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            serialPort.closePort();
-        }
-    }
 
     // 创建Modbus报文（写多个寄存器）
-    private static byte[] createModbusRequest(List<Float> floatList) {
+    private static byte[] createModbusRequest(List<Float> floatList, int startAddress, int quantity) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(1 + 1 + 2 + 1 + 2 + 2 + floatList.size() * 4);
         byteBuffer.order(ByteOrder.BIG_ENDIAN);
         // 1. Slave ID (1 byte)
@@ -72,7 +31,7 @@ public class ModbusMaster {
         // 4. Quantity of registers (2 bytes)
         byteBuffer.putShort((short) (quantity));
         // 5. Byte count (1 byte)
-        byteBuffer.put((byte) (quantity* 2));
+        byteBuffer.put((byte) (quantity * 2));
         // 6. Register values (floatList.size() * 4 bytes)
         for (Float value : floatList) {
             byte[] floatBytes = floatToBytes(value);
@@ -116,5 +75,60 @@ public class ModbusMaster {
         return crcBytes;
     }
 
+    // 发送Modbus请求并接收响应
+    public static byte[] sendModbusRequest(SerialPort serialPort, List<Float> floatList, int startAddress, int quantity) {
+        if (!serialPort.isOpen()) {
+            System.out.println("Serial port is not open.");
+            return null;
+        }
 
+        try {
+            // 生成Modbus报文并发送
+            byte[] modbusRequest = createModbusRequest(floatList, startAddress, quantity);
+            serialPort.writeBytes(modbusRequest, modbusRequest.length);
+            // 等待并读取响应
+            byte[] response = new byte[256];
+            int bytesRead = serialPort.readBytes(response, response.length);
+            if (bytesRead > 0) {
+                return Arrays.copyOf(response, bytesRead);
+            } else {
+                System.out.println("No response from slave.");
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        // 创建一个浮动数列表，准备发送
+        List<Float> floatList = Arrays.asList(0.1f, 0.2f, 0.3f, 0.4f, 0.5f);
+        // 打开串口连接
+        SerialPort serialPort = SerialPort.getCommPort("COM10");
+        serialPort.setBaudRate(9600);
+        serialPort.setNumDataBits(DATA_BITS);
+        serialPort.setNumStopBits(STOP_BITS);
+        serialPort.setParity(PARITY);
+
+        if (!serialPort.openPort()) {
+            System.out.println("Failed to open serial port.");
+            return;
+        }
+
+        try {
+            while (true) {
+                // 发送Modbus请求并接收响应
+                byte[] response = sendModbusRequest(serialPort, floatList, 0, 10);
+                if (response != null) {
+                    System.out.println("Response: " + Arrays.toString(response));
+                }
+                Thread.sleep(1000);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            serialPort.closePort();
+        }
+    }
 }

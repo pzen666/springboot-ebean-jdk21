@@ -20,6 +20,7 @@
         <module>server</module>
         <module>common</module>
         <module>entity</module>
+        <module>iot-server</module>
     </modules>
 
 </project>
